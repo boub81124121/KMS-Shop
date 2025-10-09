@@ -253,10 +253,244 @@ function updateCartCount(){const c=state.cart.reduce((s,i)=>s+i.qty,0);const el=
 // Export CSV
 function exportCartCSV(){if(state.cart.length===0)return alert('Panier vide');const headers=['id','title','price','qty','total'];const rows=state.cart.map(i=>{const p=state.products.find(x=>x.id==i.id);return[p.id,p.title,p.price,i.qty,p.price*i.qty];});const csv=[headers.join(','),...rows.map(r=>r.join(','))].join('\n');const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='panier.csv';a.click();URL.revokeObjectURL(url);}
 
-// Paiement simulé
-function openPaymentModal(amount){const html=`<div class="modal fade" id="payModal" tabindex="-1"><div class="modal-dialog modal-dialog-centered"><div class="modal-content"><div class="modal-header"><h5>Paiement Simulation</h5><button class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><p>Montant: <strong>${money(amount)}</strong></p><div class="d-flex gap-2"><button id="stripeSim" class="btn btn-primary flex-fill">Stripe</button><button id="paypalSim" class="btn btn-outline-secondary flex-fill">PayPal</button></div></div></div></div></div>`;const wrap=document.createElement('div');wrap.innerHTML=html;document.body.appendChild(wrap);const modal=new bootstrap.Modal(document.getElementById('payModal'));modal.show();document.getElementById('stripeSim').addEventListener('click',()=>simulatePayment('Stripe',amount,modal));document.getElementById('paypalSim').addEventListener('click',()=>simulatePayment('PayPal',amount,modal));document.getElementById('payModal').addEventListener('hidden.bs.modal',()=>wrap.remove());}
-function simulatePayment(provider,amount,modal){const body=document.querySelector('#payModal .modal-body');body.innerHTML=`<p>Paiement en cours via <strong>${provider}</strong>...</p>`;setTimeout(()=>{body.innerHTML=`<div class="text-center"><h5>Paiement réussi ✅</h5><p>Merci pour votre achat via ${provider}</p><button id="closePayOk" class="btn btn-success mt-2">Fermer</button></div>`;document.getElementById('closePayOk').addEventListener('click',()=>{bootstrap.Modal.getInstance(document.getElementById('payModal')).hide();onPaymentSuccess(provider,amount);});},1200);}
-function onPaymentSuccess(provider,amount){alert('Paiement simulé via '+provider+' — '+money(amount));state.cart=[];render();}
+// Ouvre le modal de commande
+function openPaymentModal(amount) {
+  const html = `
+  <div class="modal fade" id="orderModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header bg-primary text-white">
+          <h5 class="modal-title">Passer la commande</h5>
+          <button class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <form id="orderForm" class="vstack gap-2">
+            <div>
+              <label class="form-label">Nom complet</label>
+              <input type="text" id="clientName" class="form-control" placeholder="Ex: Mahamadou Sani" required>
+            </div>
+            <div>
+              <label class="form-label">Localisation / Adresse</label>
+              <input type="text" id="clientLocation" class="form-control" placeholder="Ex: Niamey, Quartier Plateau" required>
+            </div>
+            <div>
+              <label class="form-label">Description (optionnelle)</label>
+              <textarea id="clientDescription" class="form-control" rows="2" placeholder="Ex: livraison rapide souhaitée..."></textarea>
+            </div>
+            <div class="d-grid gap-2 mt-3">
+              <button type="button" id="downloadImagesBtn" class="btn btn-outline-primary w-100">
+                Télécharger les images du panier
+              </button>
+              <button type="submit" class="btn btn-success w-100">
+                <i class="bi bi-whatsapp"></i> Envoyer la commande sur WhatsApp
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+  `;
+
+  const wrap = document.createElement('div');
+  wrap.innerHTML = html;
+  document.body.appendChild(wrap);
+
+  const modal = new bootstrap.Modal(document.getElementById('orderModal'));
+  modal.show();
+
+  document.getElementById('orderModal').addEventListener('hidden.bs.modal', () => wrap.remove());
+
+  // Bouton pour télécharger toutes les images du panier
+  document.getElementById('downloadImagesBtn').addEventListener('click', async () => {
+    if (!state.cart.length) return alert('Panier vide');
+    for (const item of state.cart) {
+      const product = state.products.find(p => p.id === item.id);
+      if (!product) continue;
+      try {
+        const response = await fetch(product.img);
+        if (!response.ok) throw new Error('Erreur téléchargement image');
+        const blob = await response.blob();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        const extension = product.img.split('.').pop().split('?')[0];
+        a.download = `${product.title.replace(/\s+/g,'_')}.${extension}`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      } catch (err) {
+        console.error(`Impossible de télécharger ${product.title}:`, err);
+      }
+    }
+  });
+
+  // Soumission du formulaire -> envoie sur WhatsApp
+  document.getElementById('orderForm').addEventListener('submit', (e) => {
+    e.preventDefault();
+
+    const name = document.getElementById('clientName').value.trim();
+    const location = document.getElementById('clientLocation').value.trim();
+    const description = document.getElementById('clientDescription').value.trim();
+
+    if (!name || !location) return alert('Veuillez remplir votre nom et votre localisation.');
+
+    sendOrderViaWhatsApp(name, location, description, amount, modal);
+  });
+}
+
+// Fonction pour envoyer la commande sur WhatsApp
+function sendOrderViaWhatsApp(name, location, description, amount, modal) {
+  if (!state.cart.length) return alert('Votre panier est vide.');
+
+  const phone = "22789413840"; // Ton numéro WhatsApp en format international sans +
+
+  let message = `🛍 *Nouvelle commande via ${state.siteName}*%0A%0A`;
+  message += `👤 *Nom:* ${name}%0A`;
+  message += `📍 *Localisation:* ${location}%0A`;
+  if (description) message += `📝 *Note:* ${description}%0A`;
+  message += `%0A🧾 *Détails de la commande :*%0A`;
+
+  state.cart.forEach((item, i) => {
+    const product = state.products.find(p => p.id === item.id);
+    if (product) {
+      message += `\n${i+1}. ${product.title} - ${money(product.price)} x ${item.qty}`;
+    }
+  });
+
+  message += `%0A%0A💰 *Total:* ${money(amount)}%0A`;
+  message += `%0A✅ Merci de confirmer votre commande.`;
+
+  const url = `https://wa.me/${phone}?text=${encodeURIComponent(decodeURIComponent(message))}`;
+
+  modal.hide();
+  state.cart = [];
+  render();
+
+  window.open(url, "_blank");
+}
+
+
+// Fonction unique et corrigée pour envoyer la commande sur WhatsApp (avec images)
+// Fonction améliorée — Envoi WhatsApp avec aperçu d’images
+function sendOrderViaWhatsApp(name, location, description, amount, modal) {
+  if (!state.cart.length) {
+    alert('Votre panier est vide.');
+    return;
+  }
+
+  // Ton numéro WhatsApp (à personnaliser)
+  const phone = "22789413840"; // Format international sans le +
+
+  // 🧾 Construction du message WhatsApp
+  let message = `🛍 *Nouvelle commande via ${state.siteName}*%0A%0A`;
+  message += `👤 *Nom:* ${name}%0A`;
+  message += `📍 *Localisation:* ${location}%0A`;
+  if (description) message += `📝 *Note:* ${description}%0A`;
+  message += `%0A🧾 *Détails de la commande :*%0A`;
+
+  // 🔹 Ajoute chaque produit avec son image sur une ligne à part
+  state.cart.forEach((item, i) => {
+    const product = state.products.find(p => p.id === item.id);
+    if (product) {
+      message += `%0A${i + 1}. *${product.title}*%0A`;
+      message += `💰 Prix: ${money(product.price)} x ${item.qty}%0A`;
+      // 🔸 Ajout du lien d'image sur une ligne séparée (WhatsApp génère une vignette)
+      message += `${product.img}%0A`;
+    }
+  });
+
+  message += `%0A💵 *Total:* ${money(amount)}%0A`;
+  message += `%0A✅ Merci de confirmer votre commande.%0A%0A`;
+
+  // ✅ Encodage correct pour WhatsApp
+  const url = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+
+  // 🔁 Ferme le modal et vide le panier
+  modal.hide();
+  state.cart = [];
+  render();
+
+  // 🟢 Ouvre WhatsApp
+  window.open(url, "_blank");
+}
+
+
+
+function sendOrderViaWhatsApp(name, location, description, amount, modal) {
+  if (!state.cart.length) {
+    alert('Votre panier est vide.');
+    return;
+  }
+
+  // Numéro WhatsApp du vendeur (à modifier)
+  const phone = "22789413840"; // Format international sans +
+
+  let message = `🛍 *Nouvelle commande via ${state.siteName}*%0A%0A`;
+  message += `👤 *Nom:* ${name}%0A`;
+  message += `📍 *Localisation:* ${location}%0A`;
+  if (description) message += `📝 *Note:* ${description}%0A`;
+  message += `%0A🧾 *Détails de la commande :*%0A`;
+
+  state.cart.forEach((item, i) => {
+    const product = state.products.find(p => p.id === item.id);
+    if (product) {
+      message += `%0A${i + 1}. *${product.title}*%0A💰 Prix: ${money(product.price)} x ${item.qty}%0A🖼 Image: ${product.img}%0A`;
+    }
+  });
+
+  message += `%0A💰 *Total:* ${money(amount)}%0A%0A✅ Merci de confirmer votre commande.`;
+
+  const url = `https://wa.me/${phone}?text=${encodeURIComponent(decodeURIComponent(message))}`;
+
+  modal.hide();
+  state.cart = [];
+  render();
+
+  window.open(url, "_blank");
+}
+
+
+// Fonction pour envoyer la commande sur WhatsApp
+function sendOrderViaWhatsApp(name, location, description, amount, modal) {
+  if (!state.cart.length) {
+    alert('Votre panier est vide.');
+    return;
+  }
+
+  // Numéro WhatsApp du vendeur (à modifier selon ton besoin)
+  const phone = "22789413840"; // exemple: format international sans "+"
+
+  // Génère le message avec tous les produits
+  let message = `🛍 *Nouvelle commande via ${state.siteName}*%0A%0A`;
+  message += `👤 *Nom:* ${name}%0A`;
+  message += `📍 *Localisation:* ${location}%0A`;
+  if (description) message += `📝 *Note:* ${description}%0A`;
+  message += `%0A🧾 *Détails de la commande :*%0A`;
+
+  state.cart.forEach((item, i) => {
+    const product = state.products.find(p => p.id === item.id);
+    if (product) {
+      message += `\n${i + 1}. ${product.title} - ${money(product.price)} x ${item.qty}`;
+    }
+  });
+
+  message += `%0A%0A💰 *Total:* ${money(amount)}%0A`;
+  message += `%0A✅ Merci de confirmer votre commande.`;
+
+  // Encode l’URL WhatsApp
+  const url = `https://wa.me/${phone}?text=${encodeURIComponent(decodeURIComponent(message))}`;
+
+  // Ferme le modal et vide le panier
+  modal.hide();
+  state.cart = [];
+  render();
+
+  // Ouvre WhatsApp dans un nouvel onglet
+  window.open(url, "_blank");
+}
+
 
 // Navigation
 function navigateTo(route,params){state.route=route;if(params&&params.id)state.productId=params.id;render();}
