@@ -213,7 +213,7 @@ function renderContact(container){container.innerHTML='<div class="card p-4"><h4
 
 function productCardHTML(p){
   return `
-  <div class="product-card p-2 position-relative" style="color:#000;">
+  <div class="product-card p-2 position-relative view-btn" data-id="${p.id}" style="color:#000;">
     <div class="product-bg" style="
       background-image: url('${p.img}');
       background-size: contain;
