@@ -1,0 +1,12 @@
+<!-- Embedded products JSON (simule un fichier JSON) -->
+[
+  {"id":1,"title":"Eau de Parfum Sauvage Inspired","price":45000,"img":"https://www.lsa-conso.fr/mediatheque/3/6/5/000184563_896x598_c.png?text=Parfum+1","desc":"Parfum intense, notes fraîches et boisées."},
+  {"id":2,"title":"Sérum Visage Hydratant","price":15000,"img":"https://www.edesk.com/wp-content/uploads/2021/03/find-trending-products-sell-ecommerce.png?text=S%C3%A9rum","desc":"Hydratation longue durée, texture légère."},
+  {"id":3,"title":"Sac à Dos Urbain","price":25000,"img":"https://www.pcdigital.fr/wp-content/uploads/2021/06/boutique-en-ligne-ecommerce.png?text=Sac","desc":"Grand volume, poche pour ordinateur portable."},
+  {"id":4,"title":"Casque Audio Bluetooth","price":35000,"img":"https://shotify.tn/wp-content/uploads/2022/12/visuel-assisescommerce-550.jpg?text=Casque","desc":"Son clair, autonomie 30h."},
+  {"id":5,"title":"Sac à Dos Urbain","price":25000,"img":"https://www.pcdigital.fr/wp-content/uploads/2021/06/boutique-en-ligne-ecommerce.png?text=Sac","desc":"Grand volume, poche pour ordinateur portable."},
+  {"id":6,"title":"Sac à Dos Urbain","price":25000,"img":"https://www.pcdigital.fr/wp-content/uploads/2021/06/boutique-en-ligne-ecommerce.png?text=Sac","desc":"Grand volume, poche pour ordinateur portable."},
+  {"id":7,"title":"Sac à Dos Urbain","price":25000,"img":"https://www.pcdigital.fr/wp-content/uploads/2021/06/boutique-en-ligne-ecommerce.png?text=Sac","desc":"Grand volume, poche pour ordinateur portable."},
+  {"id":8,"title":"Sac à Dos Urbain","price":25000,"img":"https://www.pcdigital.fr/wp-content/uploads/2021/06/boutique-en-ligne-ecommerce.png?text=Sac","desc":"Grand volume, poche pour ordinateur portable."},
+  {"id":9,"title":"Sac à Dos Urbain","price":25000,"img":"https://www.pcdigital.fr/wp-content/uploads/2021/06/boutique-en-ligne-ecommerce.png?text=Sac","desc":"Grand volume, poche pour ordinateur portable."}
+]
