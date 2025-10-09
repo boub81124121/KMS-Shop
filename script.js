@@ -213,28 +213,35 @@ function renderContact(container){container.innerHTML='<div class="card p-4"><h4
 
 function productCardHTML(p){
   return `
-  <div class="product-card p-2 position-relative view-btn" data-id="${p.id}" style="color:#000;">
-    <div class="product-bg" style="
+  <div class="product-card p-2 position-relative" data-link="product" data-id="${p.id}" style="color:#000; cursor:pointer;">
+    <div class="product-bg" data-id="${p.id}" style="
       background-image: url('${p.img}');
       background-size: contain;
       background-repeat: no-repeat;
       background-position: center;
       border-radius: var(--card-radius);
       height: 220px;
+      transition: transform 0.25s ease;
     "></div>
-    <div class="p-2 position-absolute top-0 start-0 w-100 h-100 d-flex flex-column justify-content-end" style="background: linear-gradient(to top, rgba(0,0,0,1), rgba(0,0,0,0)); border-radius: var(--card-radius);">
+
+    <div class="p-2 position-absolute top-0 start-0 w-100 h-100 d-flex flex-column justify-content-end"
+         style="background: linear-gradient(to top, rgba(0,0,0,1), rgba(0,0,0,0)); border-radius: var(--card-radius);">
       <h6 class="text-white mb-1">${p.title}</h6>
       <div class="d-flex justify-content-between align-items-center">
         <small class="text-white">${money(p.price)}</small>
         <div>
-          <button class="btn btn-sm btn-outline-light me-1 view-btn" data-id="${p.id}">Voir</button>
-          <button class="btn btn-sm btn-primary add-btn" data-id="${p.id}"><i class="bi bi-cart-plus"></i></button>
+          <button class="btn btn-sm btn-outline-light me-1 view-btn" data-id="${p.id}" data-link="product">Voir</button>
+          <button class="btn btn-sm btn-primary add-btn" data-id="${p.id}" aria-label="Ajouter au panier">
+            <i class="bi bi-cart-plus"></i>
+          </button>
         </div>
       </div>
     </div>
   </div>
   `;
 }
+
+
 
 
 // Panier ;alert('Ajouté au panier')
@@ -253,7 +260,42 @@ function onPaymentSuccess(provider,amount){alert('Paiement simulé via '+provide
 
 // Navigation
 function navigateTo(route,params){state.route=route;if(params&&params.id)state.productId=params.id;render();}
-window.addEventListener('click',e=>{const link=e.target.closest('[data-link]');if(link){e.preventDefault();const route=link.getAttribute('data-link');if(route==='product'){const id=link.getAttribute('data-id');navigateTo('product',{id});}else navigateTo(route);}const add=e.target.closest('.add-btn');if(add){const id=+add.getAttribute('data-id');addToCart(id);}const view=e.target.closest('.view-btn');if(view){const id=+view.getAttribute('data-id');navigateTo('product',{id});}});
+window.addEventListener('click', (e) => {
+  // 1) Priorité: bouton ajouter au panier
+  const addBtn = e.target.closest('.add-btn');
+  if (addBtn) {
+    e.preventDefault();
+    const id = +addBtn.getAttribute('data-id');
+    if (!isNaN(id)) addToCart(id);
+    return;
+  }
+
+  // 2) Deuxième priorité: clic sur image / bouton "Voir" (détail)
+  const viewTarget = e.target.closest('.view-btn') || e.target.closest('.product-bg');
+  if (viewTarget) {
+    e.preventDefault();
+    // récupère l'id soit sur l'élément, soit sur l'ancêtre data-id
+    const idAttr = viewTarget.getAttribute('data-id') || viewTarget.closest('[data-id]')?.getAttribute('data-id');
+    const id = idAttr ? +idAttr : null;
+    if (id) navigateTo('product', { id });
+    return;
+  }
+
+  // 3) Enfin: autres éléments marqués data-link (nav, boutons, etc.)
+  const link = e.target.closest('[data-link]');
+  if (link) {
+    e.preventDefault();
+    const route = link.getAttribute('data-link');
+    if (route === 'product') {
+      const id = +link.getAttribute('data-id');
+      if (!isNaN(id)) navigateTo('product', { id });
+    } else {
+      navigateTo(route);
+    }
+    return;
+  }
+});
+
 
 function highlightBottomNav(){qAll('.bottom-nav .nav-btn').forEach(b=>{b.classList.remove('active');if(b.getAttribute('data-link')===state.route)b.classList.add('active');});}
 
