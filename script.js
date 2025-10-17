@@ -1,16 +1,20 @@
 // script.js — version complète, autonome avec boutiques, filtre/tri par boutique et produit, panier, CSV, paiement simulé
 
 // Données produits organisées par boutique
-const products = [
-  {"id":1,"title":"Sérum Visage Hydratant","price":15000,"img":"https://www.endro-cosmetiques.com/cdn/shop/files/serum-hydratant-1-dacide-hyaluronique-endro-cosmetiques-serums-visage-4120923.png?crop=center&height=952&v=1759233413&width=952?text=S%C3%A9rum","desc":"Hydratation longue durée, texture légère.","store":"Beauté & Soins"},
-  {"id":2,"title":"Crème Anti-âge","price":20000,"img":"https://www.byphasse.com/wp-content/uploads/2024/04/SUPER-PROTECT-CITY-ANTI-AGING-FACE-CREAM-SPF50-50ML-PRODUCT-SHADOW_5.png?text=Cr%C3%A8me","desc":"Régénère la peau et réduit les rides.","store":"Beauté & Soins"},
-  {"id":3,"title":"Sac à Dos Urbain","price":25000,"img":"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTxFWEHN1KnJ7qNURITH-8QnXATrzUovx5QaQ&s?text=Sac","desc":"Grand volume, poche pour ordinateur portable.","store":"Mode & Accessoires"},
-  {"id":4,"title":"Montre Classique Homme","price":85000,"img":"https://www.lepage.fr/40363-home_default/montre-tissot-le-locle-powermatic-80-automatique-cadran-bleu-bracelet-acier-39-mm-t0064071104300.jpg?text=Montre","desc":"Cadran élégant, bracelet en cuir.","store":"Mode & Accessoires"},
-  {"id":5,"title":"Lunettes de Soleil","price":30000,"img":"https://terredefrance.fr/cdn/shop/products/3107948238.jpg?v=1754165783?text=Lunettes","desc":"Protection UV et style moderne.","store":"Mode & Accessoires"},
-  {"id":6,"title":"Casque Audio Bluetooth","price":35000,"img":"https://png.pngtree.com/png-vector/20201129/ourmid/pngtree-black-and-red-wireless-headset-png-image_2445268.jpg?text=Casque","desc":"Son clair, autonomie 30h.","store":"Tech & Électronique"},
-  {"id":7,"title":"Clé USB 128GB","price":12000,"img":"https://media.rueducommerce.fr/rd/products/db3/db3ad36e0edb438655b74cfd0d24101aed4141e3.jpg?text=USB","desc":"Stockage rapide et fiable.","store":"Tech & Électronique"},
-  {"id":8,"title":"Enceinte Bluetooth Portable","price":45000,"img":"https://media.rueducommerce.fr/ld/products/00/06/11/94/LD0006119437.jpg?text=Enceinte","desc":"Son puissant, compacte et portable.","store":"Tech & Électronique"}
-];
+let products = [];
+
+fetch('products.json')
+  .then(res => res.json())
+  .then(data => {
+    products = data;
+    state.products = products;
+    render();
+  })
+  .catch(err => {
+    console.error("Erreur chargement produits :", err);
+    render();
+  });
+
 
 // État global
 const state = { siteName: 'SaniShop', products, cart: [], route: 'home', filterStore: 'all', sortBy: 'default' };
