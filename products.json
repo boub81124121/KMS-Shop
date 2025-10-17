@@ -1,0 +1,42 @@
+[
+  {
+    "id": 1,
+    "title": "Sérum Visage Hydratant",
+    "price": 15000,
+    "img": "https://raw.githubusercontent.com/<ton-utilisateur>/<ton-repo>/main/images/serum.png",
+    "desc": "Hydratation longue durée, texture légère.",
+    "store": "Beauté & Soins"
+  },
+  {
+    "id": 2,
+    "title": "Crème Anti-âge",
+    "price": 20000,
+    "img": "https://raw.githubusercontent.com/<ton-utilisateur>/<ton-repo>/main/images/creme.png",
+    "desc": "Régénère la peau et réduit les rides.",
+    "store": "Beauté & Soins"
+  },
+  {
+    "id": 3,
+    "title": "Montre Classique Homme",
+    "price": 85000,
+    "img": "https://raw.githubusercontent.com/<ton-utilisateur>/<ton-repo>/main/images/montre.png",
+    "desc": "Cadran élégant, bracelet en cuir.",
+    "store": "Mode & Accessoires"
+  },
+  {
+    "id": 4,
+    "title": "Crème Anti-âge",
+    "price": 26000,
+    "img": "https://raw.githubusercontent.com/<ton-utilisateur>/<ton-repo>/main/images/creme.png",
+    "desc": "Régénère la peau et réduit les rides.",
+    "store": "Beauté & Soins"
+  },
+  {
+    "id": 5,
+    "title": "Montre Classique Homme",
+    "price": 15000,
+    "img": "https://raw.githubusercontent.com/<ton-utilisateur>/<ton-repo>/main/images/montre.png",
+    "desc": "Cadran élégant, bracelet en cuir.",
+    "store": "Mode & Accessoires"
+  }
+]
