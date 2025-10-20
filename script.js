@@ -234,7 +234,7 @@ function productCardHTML(p){
       <div class="d-flex justify-content-between align-items-center">
         <small class="text-white">${money(p.price)}</small>
         <div>
-          <button class="btn btn-sm btn-outline-light me-1 view-btn" data-id="${p.id}" data-link="product">Voir</button>
+          <button class="btn btn-sm btn-outline-light me-1 view-btn" data-id="${p.id}" data-link="product"><i class="bi bi-eye"></i></button>
           <button class="btn btn-sm btn-primary add-btn" data-id="${p.id}" aria-label="Ajouter au panier">
             <i class="bi bi-cart-plus"></i>
           </button>
